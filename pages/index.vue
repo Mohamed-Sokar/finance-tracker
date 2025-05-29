@@ -10,21 +10,32 @@ const isLoading = ref(false);
 const transactionsGroupedByDate = computed(() => {
   const grouped: any = {};
   for (const transaction of transactions.value) {
-    const date = new Date(transaction.created_at).toLocaleDateString();
+    const date = new Date(transaction.created_at).toISOString().split("T")[0];
     if (!grouped[date]) {
       grouped[date] = [];
     }
     grouped[date].push(transaction);
   }
+  // To sort the grouped in client side
+
+  // const sortedKeys = Object.keys(grouped).sort().reverse();
+  // let sortedGrouped: any = {};
+  // for (const key of sortedKeys) {
+  //   sortedGrouped[key] = grouped[key];
+  // }
+  // return sortedGrouped;
 
   return grouped;
 });
 const fetchTransactions = async () => {
-  console.log("fetchTransactions");
+  // console.log("fetchTransactions");
   try {
     isLoading.value = true;
     // const { data } = await useAsyncData("transactions", async () => {
-    const { data, error } = await supabase.from("transactions").select();
+    const { data, error } = await supabase
+      .from("transactions")
+      .select()
+      .order("created_at", { ascending: false }); // to sort the transactions in the server side
     if (error) return [];
     return data;
     // });
@@ -40,13 +51,12 @@ const refreshTransactions = async () => {
 await refreshTransactions();
 
 // computed properties
-const income = computed(
-  () => transactions.value.filter((t: any) => t.type === "Income") ?? []
-);
+const income = computed(() => {
+  return transactions.value.filter((t: any) => t.type === "Income") ?? [];
+});
 const expense = computed(
   () => transactions.value.filter((t: any) => t.type === "Expense") ?? []
 );
-
 const incomeTotal = computed(() =>
   // use reduce to sum the income transactions
   income.value.reduce(
@@ -67,6 +77,7 @@ const expenseCount = computed(() => {
   return expense.value.length;
 });
 </script>
+
 <template>
   <!-- Start Summary section -->
   <section class="flex justify-between items-center mb-10">
@@ -86,14 +97,14 @@ const expenseCount = computed(() => {
     <Trend
       title="Income"
       :amount="incomeTotal"
-      :last-amount="3000"
+      :last-amount="15000"
       color="green"
       :loading="isLoading"
     />
     <Trend
       title="Expense"
       :amount="expenseTotal"
-      :last-amount="4500"
+      :last-amount="10500"
       color="red"
       :loading="isLoading"
     />

@@ -15,6 +15,7 @@
         :state="state"
         class="space-y-4"
         @submit="onSubmit"
+        ref="form"
       >
         <UFormField label="Transaction Type" name="type" required>
           <USelect
@@ -80,15 +81,16 @@
 
 <script setup lang="ts">
 import { number, object, string, type InferType } from "yup";
-// import type { FormSubmitEvent } from "@nuxt/ui";
+import type { FormSubmitEvent } from "@nuxt/ui";
 import {
   transactionTypeOptions,
   transactionCategoryOptions,
 } from "~/constants";
+
 const toast = useToast();
 const supabase = useSupabaseClient();
 const isLoading = ref(false);
-
+const form = ref();
 const emit = defineEmits(["added"]);
 
 const schema = object({
@@ -100,7 +102,7 @@ const schema = object({
     .positive("Amount must be a positive number")
     .required("Amount is required"),
   created_at: string().required("Date is required"),
-  description: string(),
+  description: string().optional(),
   category: string()
     .oneOf(transactionCategoryOptions.value.map((option) => option))
     .required("Category is required"),
@@ -109,34 +111,31 @@ const schema = object({
 type Schema = InferType<typeof schema>;
 
 interface Transaction {
-  type: string;
+  type: undefined;
   amount: number;
-  created_at: string;
-  description: string;
-  category: string;
+  created_at: undefined;
+  description: undefined;
+  category: undefined;
 }
 
-const state = reactive<Transaction>({
-  type: "",
+const initialState = {
+  type: undefined,
   amount: 0,
-  created_at: "",
-  description: "",
-  category: "",
+  created_at: undefined,
+  description: undefined,
+  category: undefined,
+};
+
+const state = reactive<Transaction>({
+  ...initialState,
 });
 
-const clearForm = () => {
-  state.type = "";
-  state.amount = 0;
-  state.created_at = "";
-  state.description = "";
-  state.category = "";
+const resetForm = () => {
+  Object.assign(state, initialState);
+  form.value.clear(); // clear the errors from the form
 };
-// const state1 = ref({ ...state });
 
-// console.log(state1.value);
-
-async function onSubmit() {
-  console.log("submited");
+async function onSubmit(event: FormSubmitEvent<Schema>) {
   isLoading.value = true;
   const { error } = await supabase.from("transactions").insert(state);
   if (error) {
@@ -154,7 +153,7 @@ async function onSubmit() {
     });
     isLoading.value = false;
     emit("added");
-    clearForm();
+    resetForm();
   }
 }
 </script>
