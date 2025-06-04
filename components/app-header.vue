@@ -11,6 +11,30 @@
       }"
     >
       <UAvatar :src="url ?? '/images/avatar.jpg'" size="xl" class="border" />
+      <template #account="{ item }">
+        <div class="text-left w-full">
+          <p class="text-muted">Signed in as</p>
+          <div class="flex justify-between w-full">
+            <p class="font-medium text-gray-900 dark:text-white">
+              {{ user.email }}
+            </p>
+            <UIcon
+              :name="item.icon"
+              class="flex-shrink-0 h-4 w-4 text-gray-400 dark:text-gray-500 ms-auto"
+            />
+          </div>
+        </div>
+      </template>
+      <template #item-leading> </template>
+
+      <!-- <template #item="{ item }">
+        <span class="truncate">{{ item.label }}</span>
+
+        <UIcon
+          :name="item.icon"
+          class="flex-shrink-0 h-4 w-4 text-gray-400 dark:text-gray-500 ms-auto"
+        />
+      </template> -->
     </UDropdownMenu>
   </header>
 </template>
@@ -20,20 +44,20 @@ import type { DropdownMenuItem } from "@nuxt/ui";
 
 const supabase = useSupabaseClient();
 const user = useSupabaseUser();
-console.log(user.value);
+// console.log(user.value);
 
 const { url }: string | any = useAvatarUrl();
 
 const items: DropdownMenuItem[] = [
   [
     {
-      label: user.value?.email,
+      slot: "account",
+      // label: user.value?.email,
       icon: "i-lucide-user",
       disabled: true,
-      onSelect: () => {
-        console.log("test");
-      },
     },
+  ],
+  [
     {
       label: "Settings",
       icon: "i-lucide-cog",
