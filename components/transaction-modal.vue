@@ -1,14 +1,19 @@
 <template>
-  <UModal title="Add Transaction" size="lg">
-    <UButton
+  <UModal
+    title="Add Transaction"
+    size="lg"
+    @close="resetForm"
+    v-model:open="isOpen"
+  >
+    <!-- <UButton
       active
       color="neutral"
       variant="outline"
       active-color="primary"
       active-variant="solid"
       icon="heroicons-plus-circle-20-solid"
-      label="Add"
-    />
+      :label="isEditing ? 'Edit' : 'Add'"
+    /> -->
     <template #body>
       <UForm
         :schema="schema"
@@ -20,6 +25,7 @@
         <UFormField label="Transaction Type" name="type" required>
           <USelect
             v-model="state.type"
+            :disabled="isEditing"
             :items="transactionTypeOptions"
             class="w-full"
             placeholder="Transaction type"
@@ -55,7 +61,12 @@
           />
         </UFormField>
 
-        <UFormField label="Category" name="category" required>
+        <UFormField
+          label="Category"
+          name="category"
+          required
+          v-if="state.type === 'Expense'"
+        >
           <USelect
             v-model="state.category"
             :items="transactionCategoryOptions"
@@ -65,33 +76,49 @@
           />
         </UFormField>
 
-        <UButton type="submit">
-          <UIcon
-            v-if="isLoading"
-            name="svg-spinners-12-dots-scale-rotate"
-            class="size-5"
-          />
-          <span v-else> Save </span>
+        <UButton
+          type="submit"
+          label="Save"
+          :loading="isLoading"
+          class="w-full text-center justify-center font-bold"
+        >
         </UButton>
       </UForm>
-      <Placeholder class="h-48" />
     </template>
   </UModal>
 </template>
 
-<script setup lang="ts">
-import { number, object, string, type InferType } from "yup";
-import type { FormSubmitEvent } from "@nuxt/ui";
+<script setup>
+import { number, object, string } from "yup";
+
 import {
   transactionTypeOptions,
   transactionCategoryOptions,
 } from "~/constants";
 
-const toast = useToast();
+const props = defineProps({
+  modalValue: Boolean,
+  transaction: {
+    type: Object,
+    required: false,
+  },
+});
+
+const emit = defineEmits(["saved", "update:modalValue"]);
+
+const { toastSuccess, toastError } = useAppToast();
+
 const supabase = useSupabaseClient();
 const isLoading = ref(false);
 const form = ref();
-const emit = defineEmits(["added"]);
+const isEditing = computed(() => !!props.transaction);
+const isOpen = computed({
+  get: () => props.modalValue || false,
+  set: (value) => {
+    if (!value) resetForm();
+    emit("update:modalValue", value);
+  },
+});
 
 const schema = object({
   type: string()
@@ -103,57 +130,73 @@ const schema = object({
     .required("Amount is required"),
   created_at: string().required("Date is required"),
   description: string().optional(),
-  category: string()
-    .oneOf(transactionCategoryOptions.value.map((option) => option))
-    .required("Category is required"),
+  // category: string()
+  //   .oneOf(transactionCategoryOptions.value.map((option) => option))
+  //   .required("Category is required"),
 });
 
-type Schema = InferType<typeof schema>;
+// type Schema = InferType<typeof schema>;
 
-interface Transaction {
-  type: undefined;
-  amount: number;
-  created_at: undefined;
-  description: undefined;
-  category: undefined;
-}
+// interface Transaction {
+//   type: undefined;
+//   amount: number | undefined;
+//   created_at: undefined;
+//   description: undefined;
+//   category: undefined;
+// }
 
-const initialState = {
-  type: undefined,
-  amount: 0,
-  created_at: undefined,
-  description: undefined,
-  category: undefined,
-};
+const initialState = isEditing.value
+  ? {
+      type: props.transaction?.type,
+      amount: props.transaction?.amount,
+      created_at: props.transaction?.created_at.split("T")[0],
+      description: props.transaction?.description,
+      category: props.transaction?.category,
+    }
+  : {
+      type: undefined,
+      amount: 0,
+      created_at: undefined,
+      description: undefined,
+      category: undefined,
+    };
 
-const state = reactive<Transaction>({
-  ...initialState,
-});
+const state = reactive({ ...initialState });
 
 const resetForm = () => {
   Object.assign(state, initialState);
+  isLoading.value = false;
   form.value.clear(); // clear the errors from the form
 };
 
-async function onSubmit(event: FormSubmitEvent<Schema>) {
+async function onSubmit(event) {
   isLoading.value = true;
-  const { error } = await supabase.from("transactions").insert(state);
-  if (error) {
-    toast.add({
+  // to insert the data into the database
+  try {
+    const { error } = await supabase
+      .from("transactions")
+      .upsert({ ...state, id: props.transaction?.id });
+    if (error) {
+      isLoading.value = false;
+      console.log(error);
+      throw error;
+    } else {
+      toastSuccess({
+        title: "Successfully",
+        description: "The form has been submitted.",
+      });
+
+      isLoading.value = false;
+      emit("saved");
+      // close the modal
+      isOpen.value = false;
+      resetForm();
+    }
+  } catch (e) {
+    toastError({
       title: "Error",
-      description: "there is a problem.",
-      color: "error",
+      description: e.meessage,
     });
-    isLoading.value = false;
-  } else {
-    toast.add({
-      title: "Success",
-      description: "The form has been submitted.",
-      color: "success",
-    });
-    isLoading.value = false;
-    emit("added");
-    resetForm();
   }
 }
 </script>

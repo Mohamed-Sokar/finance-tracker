@@ -1,81 +1,41 @@
-<script setup lang="ts">
+<script setup>
 import { transactionViewOptions } from "~/constants";
+const user = useSupabaseUser();
+const isOpen = ref(false);
+const viewSelected = ref(
+  user.value?.user_metadata?.transaction_view ?? transactionViewOptions.value[1]
+);
+const { current, previous } = useSelectedTimePeriod(viewSelected);
+// console.log(current.value);
+const {
+  transactions: {
+    grouped: { byDate },
+    refresh,
+  },
+  pending,
+  incomeCount,
+  expenseCount,
+  expenseTotal,
+  incomeTotal,
+} = useFetchTransactions(current);
 
-const supabase = useSupabaseClient();
-const viewSelected = ref(transactionViewOptions.value[0]);
-const transactions = ref();
-const isLoading = ref(false);
+const {
+  expenseTotal: prevExpenseTotal,
+  incomeTotal: prevIncomTotal,
+  transactions: { refresh: refreshPrev },
+} = useFetchTransactions(previous);
 
-// Methods
-const transactionsGroupedByDate = computed(() => {
-  const grouped: any = {};
-  for (const transaction of transactions.value) {
-    const date = new Date(transaction.created_at).toISOString().split("T")[0];
-    if (!grouped[date]) {
-      grouped[date] = [];
-    }
-    grouped[date].push(transaction);
-  }
-  // To sort the grouped in client side
-
-  // const sortedKeys = Object.keys(grouped).sort().reverse();
-  // let sortedGrouped: any = {};
-  // for (const key of sortedKeys) {
-  //   sortedGrouped[key] = grouped[key];
-  // }
-  // return sortedGrouped;
-
-  return grouped;
-});
-const fetchTransactions = async () => {
-  // console.log("fetchTransactions");
-  try {
-    isLoading.value = true;
-    // const { data } = await useAsyncData("transactions", async () => {
-    const { data, error } = await supabase
-      .from("transactions")
-      .select()
-      .order("created_at", { ascending: false }); // to sort the transactions in the server side
-    if (error) return [];
-    return data;
-    // });
-    // return data.value;
-  } finally {
-    isLoading.value = false;
-  }
+const add_delete_TransactionHandler = async () => {
+  // This function can be used to handle the event when a transaction is added
+  // For example, you can call refresh() here to update the transactions list
+  await refresh();
+  // await refreshPrev();
+  // await Promise.all([refresh(), refreshPrev()]);
 };
-const refreshTransactions = async () => {
-  transactions.value = await fetchTransactions();
-};
-// you should to but it before you wanna use (transactions.value)
-await refreshTransactions();
 
-// computed properties
-const income = computed(() => {
-  return transactions.value.filter((t: any) => t.type === "Income") ?? [];
-});
-const expense = computed(
-  () => transactions.value.filter((t: any) => t.type === "Expense") ?? []
-);
-const incomeTotal = computed(() =>
-  // use reduce to sum the income transactions
-  income.value.reduce(
-    (sum: any, transaction: any) => (sum += transaction.amount),
-    0
-  )
-);
-const expenseTotal = computed(() =>
-  expense.value.reduce(
-    (sum: any, transaction: any) => (sum += transaction.amount),
-    0
-  )
-);
-const incomeCount = computed(() => {
-  return income.value.length;
-});
-const expenseCount = computed(() => {
-  return expense.value.length;
-});
+// await refresh();
+// await refreshPrev();
+await Promise.all([refresh(), refreshPrev()]);
 </script>
 
 <template>
@@ -97,30 +57,30 @@ const expenseCount = computed(() => {
     <Trend
       title="Income"
       :amount="incomeTotal"
-      :last-amount="15000"
+      :last-amount="prevIncomTotal"
       color="green"
-      :loading="isLoading"
+      :loading="pending"
     />
     <Trend
       title="Expense"
       :amount="expenseTotal"
-      :last-amount="10500"
+      :last-amount="prevExpenseTotal"
       color="red"
-      :loading="isLoading"
+      :loading="pending"
     />
     <Trend
       title="Investments"
       :amount="0"
       :last-amount="0"
       color="green"
-      :loading="isLoading"
+      :loading="pending"
     />
     <Trend
       title="Saving"
       :amount="0"
       :last-amount="0"
       color="red"
-      :loading="isLoading"
+      :loading="pending"
     />
   </section>
   <!-- End Trend section -->
@@ -135,14 +95,24 @@ const expenseCount = computed(() => {
         </div>
       </div>
       <div class="flex items-center space-x-2">
-        <transaction-modal @added="refreshTransactions()" />
+        <UButton
+          active
+          color="neutral"
+          variant="outline"
+          active-color="primary"
+          active-variant="solid"
+          icon="heroicons-plus-circle-20-solid"
+          @click="isOpen = !isOpen"
+          label="Add"
+        />
+        <transaction-modal @saved="refresh()" v-model:modal-value="isOpen" />
 
         <UButton
           active
           color="neutral"
           variant="outline"
           active-color="primary"
-          @click="refreshTransactions()"
+          @click="refresh()"
           >Refresh</UButton
         >
       </div>
@@ -152,7 +122,7 @@ const expenseCount = computed(() => {
   <!-- Start refresh button -->
 
   <!-- Start Skeleton -->
-  <div class="grid gap-3" v-if="isLoading">
+  <div class="grid gap-3" v-if="pending">
     <USkeleton class="h-10 w-full" />
     <USkeleton class="h-10 w-full" />
     <USkeleton class="h-10 w-full" />
@@ -162,7 +132,7 @@ const expenseCount = computed(() => {
 
   <!-- Start Transaction section -->
   <section v-else>
-    <div v-if="isLoading" class="flex justify-center items-center">
+    <div v-if="pending" class="flex justify-center items-center">
       <UButton
         loading
         :active="false"
@@ -171,12 +141,11 @@ const expenseCount = computed(() => {
         active-color="primary"
       ></UButton>
     </div>
+
     <div
       v-else
       class="mb-10"
-      v-for="[date, transactionsOnDay] in Object.entries(
-        transactionsGroupedByDate
-      )"
+      v-for="[date, transactionsOnDay] in Object.entries(byDate)"
     >
       <TransactionDaily
         :date="date"
@@ -187,7 +156,8 @@ const expenseCount = computed(() => {
         v-for="transaction in transactionsOnDay"
         :transaction="transaction"
         :key="transaction.id"
-        @deleted="refreshTransactions()"
+        @deleted="refresh()"
+        @edited="refresh()"
       />
     </div>
   </section>

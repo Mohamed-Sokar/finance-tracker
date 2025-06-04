@@ -1,4 +1,5 @@
-export const transactionViewOptions = ref(["Daily", "mounthly", "Yearly"]);
+export const transactionViewOptions = ref(["Daily", "Monthly", "Yearly"]);
+export const modeOptions = ref(["light", "dark"]);
 export const transactionTypeOptions = ref([
   "Income",
   "Expense",

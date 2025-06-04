@@ -10,7 +10,7 @@ export default defineNuxtConfig({
     // colorMode: false,
   },
   supabase: {
-    redirect: false,
+    redirect: true,
   },
   runtimeConfig: {
     public: {

@@ -1,20 +1,19 @@
 <script setup>
-// import type { DropdownMenuItem } from "@nuxt/ui";
-
 const props = defineProps({
   transaction: Object,
 });
 
-const emit = defineEmits(["deleted"]);
+const emit = defineEmits(["deleted", "edited"]);
+const { toastError, toastSuccess } = useAppToast();
 
 const isloading = ref(false);
+const isOpen = ref(false);
 const { currency } = useCurrency(props.transaction.amount);
 const supabase = useSupabaseClient();
-const toast = useToast();
 
-const editHandler = () => {
-  console.log("edit");
-};
+// const editHandler = () => {
+//   console.log("edit");
+// };
 
 const deleteHandler = async () => {
   isloading.value = true;
@@ -24,17 +23,15 @@ const deleteHandler = async () => {
       .delete()
       .eq("id", props.transaction.id);
 
-    toast.add({
+    toastSuccess({
       title: "transaction deleted successfully",
-      icon: "heroicons-check-circle-20-solid",
     });
+
     emit("deleted", props.transaction.id);
   } catch (error) {
-    toast.add({
+    toastError({
       title: "transaction deleted failed",
       description: "There was a problem with your request.",
-      icon: "i-lucide-info",
-      color: "error",
     });
   } finally {
     isloading.value = false;
@@ -44,9 +41,7 @@ const items = ref([
   {
     label: "edit",
     icon: "heroicons-pencil-square-20-solid",
-    onSelect() {
-      editHandler();
-    },
+    onSelect: () => (isOpen.value = true),
   },
   {
     label: "trash",
@@ -114,6 +109,11 @@ const iconColor = computed(() =>
             icon="heroicons-ellipsis-horizontal-20-solid"
             color="neutral"
             variant="soft"
+          />
+          <TransactionModal
+            :transaction="transaction"
+            v-model:modal-value="isOpen"
+            @saved="emit('edited')"
           />
         </UDropdownMenu>
       </div>

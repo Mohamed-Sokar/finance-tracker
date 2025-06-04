@@ -8,9 +8,9 @@
 </template>
 
 <script setup lang="ts">
-useHead({});
-const colorMode = useColorMode();
-colorMode.preference = "system";
+useHead({
+  title: "Finance Tracker App",
+});
 </script>
 
 <style>
