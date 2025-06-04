@@ -27,7 +27,7 @@ const { url }: string | any = useAvatarUrl();
 const items: DropdownMenuItem[] = [
   [
     {
-      label: user.value?.email || "Guest",
+      label: user.value?.email,
       icon: "i-lucide-user",
       disabled: true,
       onSelect: () => {
