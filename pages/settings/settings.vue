@@ -37,8 +37,6 @@ const colorMode = useColorMode();
 const { toastSuccess, toastError } = useAppToast();
 const pending = ref(false);
 
-colorMode.preference = user.value?.user_metadata?.color_mode;
-
 const state = ref({
   transactionView:
     user.value?.user_metadata?.transaction_view ??

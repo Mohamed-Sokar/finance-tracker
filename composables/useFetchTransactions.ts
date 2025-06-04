@@ -37,7 +37,7 @@ export const useFetchTransactions = (period: Period) => {
   //     `transactions-${period.value.from?.toISOString()}-${period.value.to?.toISOString()}`
   // );
   const fetchTransactions = async () => {
-    console.log("fetchTransactions");
+    // console.log("fetchTransactions");
     try {
       pending.value = true;
 

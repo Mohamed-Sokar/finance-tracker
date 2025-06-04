@@ -11,6 +11,10 @@
 useHead({
   title: "Finance Tracker App",
 });
+const colorMode = useColorMode();
+const user = useSupabaseUser();
+
+colorMode.preference = user.value?.user_metadata?.color_mode;
 </script>
 
 <style>
