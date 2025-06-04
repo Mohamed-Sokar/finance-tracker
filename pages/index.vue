@@ -6,7 +6,7 @@ const viewSelected = ref(
   user.value?.user_metadata?.transaction_view ?? transactionViewOptions.value[1]
 );
 const { current, previous } = useSelectedTimePeriod(viewSelected);
-// console.log(current.value);
+
 const {
   transactions: {
     grouped: { byDate },
@@ -25,16 +25,6 @@ const {
   transactions: { refresh: refreshPrev },
 } = useFetchTransactions(previous);
 
-const add_delete_TransactionHandler = async () => {
-  // This function can be used to handle the event when a transaction is added
-  // For example, you can call refresh() here to update the transactions list
-  await refresh();
-  // await refreshPrev();
-  // await Promise.all([refresh(), refreshPrev()]);
-};
-
-// await refresh();
-// await refreshPrev();
 await Promise.all([refresh(), refreshPrev()]);
 </script>
 

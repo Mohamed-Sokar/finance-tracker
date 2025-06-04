@@ -24,12 +24,10 @@ console.log(user.value);
 
 const { url }: string | any = useAvatarUrl();
 
-const email = computed(() => user.value?.email || "Guest");
-
 const items: DropdownMenuItem[] = [
   [
     {
-      label: email.value,
+      label: user.value?.email || "Guest",
       icon: "i-lucide-user",
       disabled: true,
       onSelect: () => {
