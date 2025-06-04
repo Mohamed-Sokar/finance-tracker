@@ -14,7 +14,11 @@ useHead({
 const colorMode = useColorMode();
 const user = useSupabaseUser();
 
-colorMode.preference = user.value?.user_metadata?.color_mode;
+watch(
+  user,
+  () => (colorMode.preference = user.value?.user_metadata?.color_mode),
+  { immediate: true }
+);
 </script>
 
 <style>
