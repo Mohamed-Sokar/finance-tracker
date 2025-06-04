@@ -1,9 +1,11 @@
 <template>
-  <div class="container max-w-4xl mx-auto px-3">
-    <AppHeader class="mt-10" />
-    <main class="my-10">
-      <slot></slot>
-    </main>
+  <div>
+    <AppHeader />
+    <div class="container max-w-4xl mx-auto px-3">
+      <main class="my-10">
+        <slot></slot>
+      </main>
+    </div>
   </div>
 </template>
 
