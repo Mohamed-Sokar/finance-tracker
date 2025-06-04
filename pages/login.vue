@@ -5,6 +5,7 @@ import type { FormSubmitEvent } from "@nuxt/ui";
 const success = ref(false);
 const { toastError, toastSuccess } = useAppToast();
 const supabase = useSupabaseClient();
+const redirectUrl = useRuntimeConfig().public.baseUrl;
 const pending = ref(false);
 
 const schema = object({
@@ -28,7 +29,7 @@ const handleLogin = async () => {
     const { data, error } = await supabase.auth.signInWithOtp({
       email: state.email,
       options: {
-        emailRedirectTo: `${process.env.BASE_URL}/confirm`, //try to deploy it
+        emailRedirectTo: `${redirectUrl}/confirm`, //try to deploy it
       },
     });
 
