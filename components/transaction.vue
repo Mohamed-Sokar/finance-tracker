@@ -8,8 +8,10 @@ const { toastError, toastSuccess } = useAppToast();
 
 const isloading = ref(false);
 const isOpen = ref(false);
-const { currency } = useCurrency(props.transaction.amount);
 const supabase = useSupabaseClient();
+
+const { counter } = useAutoCounter(props.transaction.amount);
+const { currency } = useCurrency(counter);
 
 // const editHandler = () => {
 //   console.log("edit");

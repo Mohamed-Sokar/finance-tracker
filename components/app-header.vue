@@ -1,7 +1,7 @@
 <template>
   <div class="w-full sticky top-0 z-1 backdrop-blur-md" id="mainHeader">
     <header
-      class="container max-w-4xl mx-auto px-3 flex justify-between py-3 spac-x-4"
+      class="container max-w-4xl mx-auto px-3 flex justify-between pt-8 pb-4 spac-x-4"
     >
       <NuxtLink to="/" class="text-2xl">Finance Traker</NuxtLink>
       <UDropdownMenu

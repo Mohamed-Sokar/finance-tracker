@@ -7,7 +7,7 @@ const props = defineProps<{
   loading: boolean;
 }>();
 
-const { amount } = toRefs(props);
+const { amount } = toRefs(props); // to make amount reactive
 
 const colorClasses = computed(() => {
   return {
@@ -38,7 +38,8 @@ const percentageTrend = computed(() => {
   return `${result}%`;
 });
 // const { currency } = useCurrency(props.amount);
-const { currency } = useCurrency(amount); // To make (amount) reactive
+const { counter } = useAutoCounter(amount.value);
+const { currency } = useCurrency(counter); // To make (amount) reactive
 </script>
 
 <template>
