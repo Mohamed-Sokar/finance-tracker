@@ -70,7 +70,7 @@ const saveSettings = async (event: FormSubmitEvent<Schema>) => {
     toastSuccess({
       title: "Settings updated",
     });
-  } catch (error) {
+  } catch (error: any) {
     toastError({
       title: "Error updating settings",
       description: error.message,

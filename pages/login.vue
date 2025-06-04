@@ -28,7 +28,7 @@ const handleLogin = async () => {
     const { data, error } = await supabase.auth.signInWithOtp({
       email: state.email,
       options: {
-        emailRedirectTo: "http://localhost:3000/confirm",
+        emailRedirectTo: `${process.env.BASE_URL}/confirm`,
       },
     });
 
