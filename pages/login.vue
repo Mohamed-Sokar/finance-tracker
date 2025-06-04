@@ -29,7 +29,7 @@ const handleLogin = async () => {
     const { data, error } = await supabase.auth.signInWithOtp({
       email: state.email,
       options: {
-        emailRedirectTo: `${redirectUrl}/confirm`, //try to deploy it
+        emailRedirectTo: `${redirectUrl}/confirm`, //try to deploy it +1
       },
     });
 
