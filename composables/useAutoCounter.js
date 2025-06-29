@@ -1,6 +1,6 @@
 import { ref, onMounted, onUnmounted } from "vue";
 
-export const useAutoCounter = (maxTime = 100) => {
+export const useAutoCounter = (maxTime = 100, duration = 100) => {
   const counter = ref(0);
   let intervalId;
 
@@ -11,7 +11,7 @@ export const useAutoCounter = (maxTime = 100) => {
       } else {
         clearInterval(intervalId);
       }
-    }, 5);
+    }, duration);
   };
 
   onMounted(() => {

@@ -26,6 +26,28 @@ const {
 } = useFetchTransactions(previous);
 
 await Promise.all([refresh(), refreshPrev()]);
+const runTimeConfing = useRuntimeConfig();
+
+// import { createClient } from "@supabase/supabase-js";
+// const supabase = createClient(
+//   runTimeConfing.public.SUPABASE_URL,
+//   runTimeConfing.public.SUPABASE_SERVICE_ROLE_KEY,
+//   {
+//     auth: {
+//       autoRefreshToken: false,
+//       persistSession: false,
+//     },
+//   }
+// );
+
+// const {
+//   data: { users },
+//   error,
+// } = await supabase.auth.admin.listUsers();
+
+// const { data, error } = await supabase.from("transactions").select();
+
+// console.log(data);
 </script>
 
 <template>

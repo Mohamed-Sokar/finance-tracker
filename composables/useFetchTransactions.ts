@@ -80,8 +80,7 @@ export const useFetchTransactions = (period: Period) => {
   const incomeTotal = computed(() =>
     // use reduce to sum the income transactions
     income.value.reduce(
-      (sum: any, transaction: any) => (sum += transaction.amount),
-      0
+      (sum: any, transaction: any) => (sum += transaction.amount)
     )
   );
   const expenseTotal = computed(() =>

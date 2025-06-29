@@ -10,7 +10,7 @@ const isloading = ref(false);
 const isOpen = ref(false);
 const supabase = useSupabaseClient();
 
-const { counter } = useAutoCounter(props.transaction.amount);
+const { counter } = useAutoCounter(props.transaction.amount, 10);
 const { currency } = useCurrency(counter);
 
 // const editHandler = () => {

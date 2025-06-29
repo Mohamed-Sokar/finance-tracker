@@ -38,7 +38,7 @@ const percentageTrend = computed(() => {
   return `${result}%`;
 });
 // const { currency } = useCurrency(props.amount);
-const { counter } = useAutoCounter(amount.value);
+const { counter } = useAutoCounter(amount.value, 5);
 const { currency } = useCurrency(counter); // To make (amount) reactive
 </script>
 
